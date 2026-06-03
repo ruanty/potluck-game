@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh" style="color-scheme: dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Host - Quiz Night</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/media.js"></script>
+  <style>
+    body { background: #1a1a2e; font-family: 'Inter', system-ui, sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen p-4">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-white">🎮 Host Control 主持人</h1>
+      <div class="flex gap-2" role="toolbar" aria-label="Game controls">
+        <button onclick="socket.emit('host:startGame')" class="px-3 py-1 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-bold focus-visible:ring-2 focus-visible:ring-green-300 focus-visible:outline-none">开始游戏 Start</button>
+        <button onclick="socket.emit('host:reloadQuestions')" class="px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded-lg text-sm font-bold focus-visible:ring-2 focus-visible:ring-gray-300 focus-visible:outline-none">刷新题目 Reload</button>
+        <button onclick="if(confirm('End game?')) socket.emit('host:endGame')" class="px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-bold focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:outline-none">结束 End</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Board -->
+      <div class="lg:col-span-2">
+        <div id="hostBoard" class="mb-4"></div>
+
+        <!-- Current Question -->
+        <div id="currentQ" class="hidden bg-white/5 border border-white/10 rounded-xl p-6">
+          <div class="flex justify-between items-center mb-3">
+            <span id="hqCategory" class="text-purple-400 font-bold"></span>
+            <span id="hqPoints" class="text-yellow-400 font-black text-xl"></span>
+          </div>
+          <p id="hqText" class="text-white text-xl mb-2"></p>
+          <p id="hqAnswer" class="text-green-400/50 text-sm mb-4">答案: <span id="hqAnswerText"></span></p>
+          <div id="hqMedia" class="mb-4"></div>
+          <div id="hqAnswerMedia" class="mb-4"></div>
+
+          <!-- Buzz Controls -->
+          <div id="buzzSection" class="border-t border-white/10 pt-4">
+            <div id="buzzInfo" class="text-gray-400 mb-3" aria-live="polite">等待中…</div>
+            <div class="flex flex-wrap gap-2" role="toolbar" aria-label="Answer controls">
+              <button onclick="socket.emit('host:openBuzz')" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:outline-none" aria-label="Open Buzz">🔴 开放抢答 Open Buzz</button>
+              <button onclick="socket.emit('host:correct')" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-green-300 focus-visible:outline-none" aria-label="Correct">✅ 正确 Correct</button>
+              <button onclick="socket.emit('host:wrong')" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:outline-none" aria-label="Wrong">❌ 错误 Wrong</button>
+              <button onclick="socket.emit('host:showAnswer')" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:outline-none" aria-label="Show Answer">👁 显示答案 Show Answer</button>
+              <button onclick="socket.emit('host:skip')" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-gray-300 focus-visible:outline-none" aria-label="Back to board">⏭ 回题板 / 下一题 Board</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-4">
+        <!-- Teams -->
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+          <h3 class="text-white font-bold mb-3">📊 Teams 组</h3>
+          <div class="flex gap-2 mb-3">
+            <input id="newTeamInput" type="text" placeholder="新组名"
+              class="min-w-0 flex-1 px-3 py-2 rounded-lg bg-black/20 border border-white/10 text-white text-sm placeholder-gray-500 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none">
+            <button id="addTeamBtn"
+              class="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-bold focus-visible:ring-2 focus-visible:ring-green-300 focus-visible:outline-none">
+              添加组
+            </button>
+          </div>
+          <div id="teamsList" class="space-y-2"></div>
+        </div>
+
+        <!-- Players -->
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+          <h3 class="text-white font-bold mb-3">👥 Players 玩家</h3>
+          <div id="playersList" class="text-gray-400 text-sm"></div>
+        </div>
+
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+          <h3 class="text-white font-bold mb-3">🏅 Personal 个人榜</h3>
+          <div id="playerRankings" class="space-y-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let board = [];
+    let currentPhase = 'lobby';
+    let latestTeams = [];
+
+    socket.on('state:phase', (phase) => {
+      currentPhase = phase;
+      document.getElementById('currentQ').classList.toggle('hidden', phase !== 'question');
+    });
+
+    socket.on('state:board', (data) => {
+      board = data;
+      renderHostBoard(data);
+    });
+
+    socket.on('state:question', ({ category, points, text, media, answer, answerMedia }) => {
+      document.getElementById('currentQ').classList.remove('hidden');
+      document.getElementById('hqCategory').textContent = category;
+      document.getElementById('hqPoints').textContent = `${points} pts`;
+      document.getElementById('hqText').textContent = text;
+      document.getElementById('hqMedia').innerHTML = media ? renderMedia(media, { maxHeight: '32' }) : '';
+      document.getElementById('hqAnswerMedia').innerHTML = answerMedia ? `<p class="text-gray-500 text-xs mb-2">答案媒体 Answer media</p>${renderMedia(answerMedia, { maxHeight: '32' })}` : '';
+      document.getElementById('buzzInfo').textContent = '等待开放抢答…';
+      document.getElementById('hqAnswerText').textContent = answer || '(no answer)';
+    });
+
+    socket.on('state:answer', ({ answer }) => {
+      document.getElementById('hqAnswerText').textContent = answer;
+    });
+
+    socket.on('buzz:open', (payload = {}) => {
+      if (payload.reason === 'media') {
+        document.getElementById('buzzInfo').innerHTML = '<span class="text-red-400 font-bold animate-pulse">🔴 媒体题已自动开放抢答 BUZZ OPEN</span>';
+        return;
+      }
+      if (payload.reason === 'allRetry') {
+        document.getElementById('buzzInfo').innerHTML = '<span class="text-red-400 font-bold animate-pulse">🔴 所有组都答错，已重新开放全部组 BUZZ RESET</span>';
+        return;
+      }
+      if (payload.reason === 'retry') {
+        const excluded = (payload.excludedTeams || []).map(escapeHtml).join('、');
+        document.getElementById('buzzInfo').innerHTML = `<span class="text-orange-300 font-bold animate-pulse">🔴 答错后继续抢答 BUZZ AGAIN</span>${excluded ? `<span class="block text-gray-500 text-sm mt-1">已答错 / Out: ${excluded}</span>` : ''}`;
+        return;
+      }
+      document.getElementById('buzzInfo').innerHTML = '<span class="text-red-400 font-bold animate-pulse">🔴 抢答开放中 BUZZ OPEN</span>';
+    });
+
+    socket.on('buzz:locked', () => {
+      document.getElementById('buzzInfo').textContent = '已锁定';
+    });
+
+    socket.on('buzz:first', ({ team, player }) => {
+      document.getElementById('buzzInfo').innerHTML = `<span class="text-yellow-400 font-bold text-lg">🔔 ${escapeHtml(team)} - ${escapeHtml(player)}</span>`;
+    });
+
+    socket.on('answer:result', ({ team, correct, points }) => {
+      const info = document.getElementById('buzzInfo');
+      if (correct) {
+        info.innerHTML = `<span class="text-green-400 font-bold">✅ ${escapeHtml(team)} +${points}</span>`;
+      } else {
+        info.innerHTML = `<span class="text-red-400 font-bold">❌ ${escapeHtml(team)} ${points} — 其他组可继续抢答</span>`;
+      }
+    });
+
+    socket.on('state:teams', (teams) => {
+      latestTeams = teams;
+      renderTeamsList(teams);
+      renderPlayerManager(teams);
+    });
+
+    socket.on('state:players', (players) => {
+      const container = document.getElementById('playerRankings');
+      container.innerHTML = players.length ? players.map((p, i) =>
+        `<div class="flex justify-between items-center p-2 rounded-lg bg-white/5">
+          <div class="min-w-0">
+            <span class="text-gray-500 text-xs mr-2">#${i + 1}</span>
+            <span class="text-white font-bold">${escapeHtml(p.name)}</span>
+            <span class="text-gray-500 text-xs ml-2">${escapeHtml(p.team)}</span>
+          </div>
+          <span class="text-yellow-400 font-black">${p.score}</span>
+        </div>`
+      ).join('') : '<p class="text-gray-500 text-sm">等待玩家加入 Waiting for players</p>';
+    });
+
+    document.getElementById('addTeamBtn').addEventListener('click', addTeam);
+    document.getElementById('newTeamInput').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') addTeam();
+    });
+
+    function renderHostBoard(board) {
+      const container = document.getElementById('hostBoard');
+      container.innerHTML = '<div class="grid gap-1" style="grid-template-columns: repeat(' + board.length + ', 1fr)">' +
+        board.map(cat =>
+          `<div class="text-center text-xs text-purple-300 font-bold p-1 truncate">${escapeHtml(cat.category)}</div>`
+        ).join('') +
+        Array.from({ length: Math.max(...board.map(c => c.questions.length)) }, (_, row) =>
+          board.map(cat => {
+            const q = cat.questions[row];
+            if (!q) return '<div></div>';
+            if (q.answered) return `<div class="text-center p-1 rounded bg-white/5 text-gray-600 text-xs line-through" aria-hidden="true">${q.points}</div>`;
+            return `<button class="question-btn text-center p-1 rounded bg-blue-900 hover:bg-blue-700 text-yellow-300 text-sm font-bold focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:outline-none" data-category="${escapeAttr(cat.category)}" data-points="${q.points}" aria-label="${escapeAttr(cat.category)} ${q.points} points">${q.points}</button>`;
+          }).join('')
+        ).join('') +
+        '</div>';
+      container.querySelectorAll('.question-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectQ(btn.dataset.category, Number(btn.dataset.points)));
+      });
+    }
+
+    function selectQ(category, points) {
+      socket.emit('host:selectQuestion', { category, points });
+    }
+
+    function renderTeamsList(teams) {
+      const container = document.getElementById('teamsList');
+      container.innerHTML = teams.map(t =>
+        `<div class="p-2 rounded-lg bg-white/5 space-y-2">
+          <div class="flex justify-between items-center gap-2">
+            <div class="min-w-0">
+              <span class="text-white font-bold break-words">${escapeHtml(t.name)}</span>
+              <span class="text-gray-500 text-xs ml-2">(${t.members.length}人)</span>
+            </div>
+            <span class="text-yellow-400 font-black">${t.score}</span>
+          </div>
+          <div class="flex gap-2">
+            <input value="${escapeAttr(t.name)}" data-old-team="${escapeAttr(t.name)}"
+              class="team-name-input min-w-0 flex-1 px-2 py-1 rounded bg-black/20 border border-white/10 text-white text-xs focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none"
+              aria-label="改名 ${escapeAttr(t.name)}">
+            <button data-rename-team="${escapeAttr(t.name)}"
+              class="rename-team-btn px-2 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:outline-none">
+              改名
+            </button>
+          </div>
+        </div>`
+      ).join('');
+      container.querySelectorAll('.rename-team-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const oldName = btn.dataset.renameTeam;
+          const input = btn.parentElement.querySelector('.team-name-input');
+          const newName = input?.value.trim();
+          if (!newName || newName === oldName) return;
+          socket.emit('host:renameTeam', { oldName, newName });
+        });
+      });
+    }
+
+    function renderPlayerManager(teams) {
+      const players = document.getElementById('playersList');
+      const teamOptions = teams.map(t => `<option value="${escapeAttr(t.name)}">${escapeHtml(t.name)}</option>`).join('');
+      const rows = teams.flatMap(team => team.members.map(member => ({ name: member, team: team.name })));
+      players.innerHTML = rows.length ? rows.map(player =>
+        `<div class="flex items-center gap-2 p-2 mb-2 rounded-lg bg-white/5">
+          <span class="min-w-0 flex-1 text-white text-sm font-bold break-words">${escapeHtml(player.name)}</span>
+          <select data-player-name="${escapeAttr(player.name)}" data-from-team="${escapeAttr(player.team)}"
+            class="move-player-select max-w-[11rem] px-2 py-1 rounded bg-black/30 border border-white/10 text-white text-xs focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none">
+            ${teamOptions}
+          </select>
+        </div>`
+      ).join('') : '<p class="text-gray-500 text-sm">等待玩家加入 Waiting for players</p>';
+      players.querySelectorAll('.move-player-select').forEach(select => {
+        select.value = select.dataset.fromTeam;
+        select.addEventListener('change', () => {
+          socket.emit('host:movePlayer', {
+            name: select.dataset.playerName,
+            fromTeam: select.dataset.fromTeam,
+            toTeam: select.value,
+          });
+        });
+      });
+    }
+
+    function addTeam() {
+      const input = document.getElementById('newTeamInput');
+      const name = input.value.trim();
+      if (!name) return;
+      socket.emit('host:addTeam', { name });
+      input.value = '';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value);
+    }
+
+
+    socket.emit('request:state');
+  </script>
+</body>
+</html>

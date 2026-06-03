@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh" style="color-scheme: dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a1a">
+  <title>Display - Quiz Night</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/media.js"></script>
+  <style>
+    body { background: #0a0a1a; font-family: 'Inter', system-ui, sans-serif; }
+    .board-cell {
+      background: linear-gradient(135deg, #1a237e, #0d47a1);
+      border: 2px solid #1565c0;
+      transition: background 0.3s, transform 0.3s, opacity 0.3s;
+      cursor: pointer;
+    }
+    .board-cell:hover { background: linear-gradient(135deg, #283593, #1565c0); transform: scale(1.02); }
+    .board-cell.answered {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
+      opacity: 0.3;
+    }
+    .category-header {
+      background: linear-gradient(135deg, #1a237e, #4a148c);
+      border: 2px solid #6a1b9a;
+    }
+    @keyframes buzzFlash {
+      0%, 100% { background-color: rgba(255, 68, 68, 0.2); }
+      50% { background-color: rgba(255, 68, 68, 0.5); }
+    }
+    .buzz-flash { animation: buzzFlash 0.5s ease-in-out 3; }
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .slide-in { animation: slideIn 0.5s ease-out; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    @media (prefers-reduced-motion: reduce) {
+      .buzz-flash, .slide-in { animation: none; }
+      .board-cell { transition: none; }
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 flex flex-col">
+  <!-- Board View -->
+  <div id="boardView" class="flex-1 flex flex-col">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-3xl font-bold text-white">🎯 Quiz Night</h1>
+      <div id="miniScoreboard" class="flex gap-4 tabular-nums" aria-live="polite"></div>
+    </div>
+    <div id="boardGrid" class="flex-1 grid gap-2"></div>
+  </div>
+
+  <!-- Question View -->
+  <div id="questionView" class="hidden flex-1 flex flex-col items-center justify-center">
+    <div class="w-full max-w-4xl">
+      <div class="flex justify-between items-center mb-4">
+        <span id="qCategory" class="text-purple-400 text-lg font-bold"></span>
+        <span id="qPoints" class="text-yellow-400 text-2xl font-black"></span>
+      </div>
+      <div id="qMedia" class="mb-6 flex justify-center"></div>
+      <p id="qText" class="text-white text-4xl font-bold text-center leading-relaxed"></p>
+      <div id="buzzIndicator" class="mt-8 text-center">
+        <p id="buzzWho" class="text-3xl font-black"></p>
+      </div>
+      <div id="answerReveal" class="hidden mt-8 text-center slide-in">
+        <p class="text-gray-400 text-lg mb-2">Answer 答案</p>
+        <p id="answerText" class="text-green-400 text-3xl font-bold"></p>
+        <div id="answerMedia" class="mt-4 flex justify-center"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- End View -->
+  <div id="endView" class="hidden flex-1 flex flex-col items-center justify-center">
+    <h1 class="text-5xl font-black text-white mb-2">🏆 Game Over!</h1>
+    <p class="text-gray-400 text-xl mb-8">最终排名 Final Rankings</p>
+    <div id="finalRankings" class="w-full max-w-2xl space-y-4"></div>
+  </div>
+
+  <!-- Scoreboard Overlay -->
+  <div id="scoreboardFull" class="mt-4">
+    <div id="scoreboardBars" class="flex gap-3 items-end justify-center h-16 tabular-nums" aria-live="polite"></div>
+  </div>
+
+  <script>
+    const socket = io();
+    let teams = [];
+    const teamColors = ['#ff4444', '#44aaff', '#44ff44', '#ffaa00', '#ff44ff', '#44ffff', '#ff8844', '#88ff44'];
+
+    socket.on('state:phase', (phase) => {
+      document.getElementById('boardView').classList.toggle('hidden', phase !== 'board');
+      document.getElementById('questionView').classList.toggle('hidden', phase !== 'question');
+      document.getElementById('endView').classList.toggle('hidden', phase !== 'end');
+      document.getElementById('scoreboardFull').classList.toggle('hidden', phase === 'end');
+      if (phase === 'question') {
+        document.getElementById('buzzIndicator').innerHTML = '<p class="text-gray-500 text-xl">等待抢答 Waiting for buzz…</p>';
+        document.getElementById('answerReveal').classList.add('hidden');
+      }
+    });
+
+    socket.on('state:board', (board) => {
+      renderBoard(board);
+    });
+
+    socket.on('state:question', ({ category, points, text, media }) => {
+      document.getElementById('qCategory').textContent = category;
+      document.getElementById('qPoints').textContent = `${points} pts`;
+      document.getElementById('qText').textContent = text;
+      document.getElementById('qMedia').innerHTML = renderMedia(media, { autoplay: true });
+      document.getElementById('buzzIndicator').innerHTML = '<p class="text-gray-500 text-xl">等待抢答 Waiting for buzz…</p>';
+      document.getElementById('answerReveal').classList.add('hidden');
+    });
+
+    socket.on('state:answer', ({ answer, answerMedia }) => {
+      document.getElementById('answerReveal').classList.remove('hidden');
+      document.getElementById('answerText').textContent = answer;
+      document.getElementById('answerMedia').innerHTML = answerMedia ? renderMedia(answerMedia, { autoplay: true }) : '';
+    });
+
+    socket.on('buzz:first', ({ team, player }) => {
+      const color = getTeamColor(team);
+      document.getElementById('buzzIndicator').innerHTML =
+        `<p class="text-3xl font-black" style="color:${color}">🔔 ${escapeHtml(team)}</p>
+         <p class="text-gray-400 mt-1">${escapeHtml(player)}</p>`;
+      document.getElementById('questionView').classList.add('buzz-flash');
+      setTimeout(() => document.getElementById('questionView').classList.remove('buzz-flash'), 1500);
+    });
+
+    socket.on('buzz:open', (payload = {}) => {
+      if (payload.reason === 'media') {
+        document.getElementById('buzzIndicator').innerHTML =
+          '<p class="text-red-400 text-2xl font-bold animate-pulse">🔴 媒体播放中，可以抢答！BUZZ NOW!</p>';
+        return;
+      }
+      if (payload.reason === 'allRetry') {
+        document.getElementById('buzzIndicator').innerHTML =
+          '<p class="text-red-400 text-2xl font-bold animate-pulse">🔴 全部答错，重新开放抢答！BUZZ RESET!</p>';
+        return;
+      }
+      if (payload.reason === 'retry') {
+        document.getElementById('buzzIndicator').innerHTML =
+          '<p class="text-orange-300 text-2xl font-bold animate-pulse">🔴 答错，其他组继续抢答！BUZZ AGAIN!</p>';
+        return;
+      }
+      document.getElementById('buzzIndicator').innerHTML =
+        '<p class="text-red-400 text-2xl font-bold animate-pulse">🔴 抢答开放！BUZZ NOW!</p>';
+    });
+
+    socket.on('answer:result', ({ team, correct, points }) => {
+      const color = getTeamColor(team);
+      const indicator = document.getElementById('buzzIndicator');
+      if (correct) {
+        indicator.innerHTML = `<p class="text-4xl font-black text-green-400">✅ ${escapeHtml(team)} +${points}</p>`;
+      } else {
+        indicator.innerHTML = `<p class="text-4xl font-black text-red-400">❌ ${escapeHtml(team)} ${points}</p>`;
+      }
+    });
+
+    socket.on('state:teams', (data) => {
+      teams = data;
+      renderScoreboard();
+      renderMiniScoreboard();
+    });
+
+    socket.on('state:final', (data) => {
+      renderFinalRankings(data);
+    });
+
+    function renderBoard(board) {
+      const grid = document.getElementById('boardGrid');
+      const cols = board.length;
+      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      grid.innerHTML = '';
+
+      // Category headers
+      board.forEach(cat => {
+        const header = document.createElement('div');
+        header.className = 'category-header rounded-lg p-3 text-center';
+        header.innerHTML = `<span class="text-white font-bold text-sm md:text-base leading-tight">${escapeHtml(cat.category)}</span>`;
+        grid.appendChild(header);
+      });
+
+      // Find max rows
+      const maxRows = Math.max(...board.map(c => c.questions.length));
+
+      for (let row = 0; row < maxRows; row++) {
+        board.forEach(cat => {
+          const q = cat.questions[row];
+          const cell = document.createElement('div');
+          if (q) {
+            cell.className = `board-cell rounded-lg flex items-center justify-center ${q.answered ? 'answered' : ''}`;
+            cell.innerHTML = q.answered ? '' : `<span class="text-yellow-300 text-2xl md:text-3xl font-black">${q.points}</span>`;
+          } else {
+            cell.className = 'opacity-0';
+          }
+          grid.appendChild(cell);
+        });
+      }
+    }
+
+
+    function renderScoreboard() {
+      const container = document.getElementById('scoreboardBars');
+      if (!teams.length) return;
+      const maxScore = Math.max(...teams.map(t => Math.abs(t.score)), 1);
+      container.innerHTML = teams.map((t, i) => {
+        const color = teamColors[i % teamColors.length];
+        const height = Math.max(20, (Math.abs(t.score) / maxScore) * 100);
+        return `<div class="flex flex-col items-center gap-1">
+          <span class="text-white text-sm font-bold">${t.score}</span>
+          <div class="w-16 rounded-t-lg transition-[height] duration-700" style="height:${height}%;background:${color}"></div>
+          <span class="text-gray-300 text-xs font-medium">${escapeHtml(t.name)}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function renderMiniScoreboard() {
+      const container = document.getElementById('miniScoreboard');
+      container.innerHTML = teams.map((t, i) => {
+        const color = teamColors[i % teamColors.length];
+        return `<span class="text-sm font-bold" style="color:${color}">${escapeHtml(t.name)}: ${t.score}</span>`;
+      }).join('');
+    }
+
+    function renderFinalRankings(data) {
+      const container = document.getElementById('finalRankings');
+      const teamData = Array.isArray(data) ? data : data.teams || [];
+      const playerData = Array.isArray(data) ? [] : data.players || [];
+      const teamHtml = teamData.map((t, i) => {
+        const color = teamColors[i % teamColors.length];
+        const medals = ['🥇', '🥈', '🥉'];
+        const medal = medals[i] || `#${i + 1}`;
+        return `<div class="flex items-center gap-4 p-4 rounded-xl slide-in" style="background:${color}22; border:2px solid ${color}; animation-delay:${i * 0.2}s">
+          <span class="text-4xl">${medal}</span>
+          <div class="flex-1">
+            <p class="text-white text-xl font-bold">${escapeHtml(t.name)}</p>
+            <p class="text-gray-400 text-sm">${t.members.map(escapeHtml).join(', ')}</p>
+          </div>
+          <span class="text-3xl font-black" style="color:${color}">${t.score}</span>
+        </div>`;
+      }).join('');
+      const playerHtml = playerData.length ? `<div class="mt-8">
+        <p class="text-gray-400 text-lg mb-3 text-center">个人排名 Personal Rankings</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          ${playerData.map((p, i) => `<div class="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+            <span class="text-gray-300">#${i + 1} ${escapeHtml(p.name)} <span class="text-gray-500 text-sm">${escapeHtml(p.team)}</span></span>
+            <span class="text-yellow-400 font-black">${p.score}</span>
+          </div>`).join('')}
+        </div>
+      </div>` : '';
+      container.innerHTML = teamHtml + playerHtml;
+    }
+
+    function getTeamColor(teamName) {
+      const idx = teams.findIndex(t => t.name === teamName);
+      return teamColors[idx >= 0 ? idx % teamColors.length : 0];
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    socket.emit('request:state');
+  </script>
+</body>
+</html>

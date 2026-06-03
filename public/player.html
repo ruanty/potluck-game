@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh" style="color-scheme: dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Player - Quiz Night</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body { background: #1a1a2e; font-family: 'Inter', system-ui, sans-serif; touch-action: manipulation; }
+    .buzz-btn {
+      width: 80vw;
+      height: 80vw;
+      max-width: 320px;
+      max-height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff4444, #cc0000);
+      box-shadow: 0 8px 0 #880000, 0 12px 30px rgba(0,0,0,0.5);
+      transition: transform 0.1s, box-shadow 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .buzz-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 4px 0 #880000, 0 6px 15px rgba(0,0,0,0.5);
+    }
+    .buzz-btn:focus-visible {
+      outline: 3px solid #60a5fa;
+      outline-offset: 4px;
+    }
+    .buzz-btn.disabled {
+      background: radial-gradient(circle at 30% 30%, #666, #444);
+      box-shadow: 0 8px 0 #333, 0 12px 30px rgba(0,0,0,0.5);
+    }
+    .buzz-btn.buzzed {
+      background: radial-gradient(circle at 30% 30%, #44ff44, #00cc00);
+      box-shadow: 0 8px 0 #008800, 0 12px 30px rgba(0,0,0,0.5);
+      animation: pulse 0.5s ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .buzz-btn, .buzz-btn.buzzed { animation: none; transition: none; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+  <!-- Join Screen -->
+  <div id="joinScreen" class="w-full max-w-sm" role="form" aria-label="Join game">
+    <h1 class="text-3xl font-bold text-white text-center mb-8">加入游戏 Join Game</h1>
+    <div class="space-y-4">
+      <div>
+        <label for="nameInput" class="sr-only">昵称 Name</label>
+        <input id="nameInput" type="text" name="nickname" autocomplete="off" spellcheck="false"
+          placeholder="你的昵称 / Your name…"
+          class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 text-lg focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none">
+      </div>
+      <div>
+        <label for="teamInput" class="sr-only">组名 Team</label>
+        <input id="teamInput" type="text" name="team" autocomplete="off" spellcheck="false"
+          placeholder="组名 / Team name…"
+          class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 text-lg focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none">
+      </div>
+      <div id="existingTeams" class="flex flex-wrap gap-2" role="group" aria-label="Existing teams"></div>
+      <button id="joinBtn" onclick="joinGame()"
+        class="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg transition-colors focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:outline-none">
+        加入 Join
+      </button>
+    </div>
+  </div>
+
+  <!-- Buzz Screen -->
+  <div id="buzzScreen" class="hidden flex flex-col items-center justify-center gap-6">
+    <div class="text-center" aria-live="polite">
+      <p id="playerInfo" class="text-gray-400 text-sm"></p>
+      <p id="buzzStatus" class="text-white text-xl font-bold mt-2">等待中 Waiting…</p>
+    </div>
+    <button id="buzzBtn" class="buzz-btn disabled flex items-center justify-center" onclick="buzz()" disabled aria-label="Buzz">
+      <span class="text-white text-3xl font-black select-none" aria-hidden="true">BUZZ!</span>
+    </button>
+    <div id="buzzFeedback" class="text-center text-lg font-bold h-8" aria-live="polite"></div>
+  </div>
+
+  <!-- End Screen -->
+  <div id="endScreen" class="hidden w-full max-w-sm">
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-black text-white mb-2">游戏结束 Game Over</h1>
+      <p id="myFinalInfo" class="text-gray-400 text-sm"></p>
+    </div>
+    <div class="space-y-4">
+      <section class="rounded-xl bg-white/5 border border-white/10 p-4">
+        <h2 class="text-white font-bold mb-3">🏅 个人排名 Personal</h2>
+        <div id="finalPlayers" class="space-y-2"></div>
+      </section>
+      <section class="rounded-xl bg-white/5 border border-white/10 p-4">
+        <h2 class="text-white font-bold mb-3">📊 队伍排名 Teams</h2>
+        <div id="finalTeams" class="space-y-2"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let myTeam = '';
+    let myName = '';
+    let canBuzz = false;
+    let latestTeams = [];
+    let latestPlayers = [];
+
+    socket.on('state:teams', (teams) => {
+      latestTeams = teams;
+      const container = document.getElementById('existingTeams');
+      container.innerHTML = '';
+      teams.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = 'px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-sm hover:bg-white/20 transition-colors focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none';
+        btn.textContent = t.name;
+        btn.onclick = () => { document.getElementById('teamInput').value = t.name; };
+        container.appendChild(btn);
+      });
+    });
+
+    socket.on('player:joined', ({ name, team }) => {
+      myName = name;
+      myTeam = team;
+      document.getElementById('joinScreen').classList.add('hidden');
+      document.getElementById('buzzScreen').classList.remove('hidden');
+      document.getElementById('endScreen').classList.add('hidden');
+      document.getElementById('playerInfo').textContent = `${name} | ${team}`;
+    });
+
+    socket.on('player:updated', ({ name, team }) => {
+      myName = name;
+      myTeam = team;
+      document.getElementById('playerInfo').textContent = `${name} | ${team}`;
+    });
+
+    socket.on('state:players', (players) => {
+      latestPlayers = players;
+    });
+
+    socket.on('buzz:open', (payload = {}) => {
+      const excludedTeams = payload.excludedTeams || [];
+      const myTeamExcluded = excludedTeams.includes(myTeam);
+      canBuzz = !myTeamExcluded;
+      const btn = document.getElementById('buzzBtn');
+      btn.disabled = myTeamExcluded;
+      btn.classList.toggle('disabled', myTeamExcluded);
+      btn.classList.remove('buzzed');
+      if (myTeamExcluded) {
+        document.getElementById('buzzStatus').textContent = '本题已答错，等待其他组 Waiting for others';
+        document.getElementById('buzzStatus').className = 'text-yellow-400 text-xl font-bold mt-2';
+      } else if (payload.reason === 'allRetry') {
+        document.getElementById('buzzStatus').textContent = '🔴 全部答错，重新开放！BUZZ RESET!';
+        document.getElementById('buzzStatus').className = 'text-red-400 text-xl font-bold mt-2';
+      } else if (payload.reason === 'retry') {
+        document.getElementById('buzzStatus').textContent = '🔴 继续抢答！BUZZ AGAIN!';
+        document.getElementById('buzzStatus').className = 'text-red-400 text-xl font-bold mt-2';
+      } else {
+        document.getElementById('buzzStatus').textContent = payload.reason === 'media'
+        ? '🔴 媒体题开始了，抢答！BUZZ NOW!'
+        : '🔴 抢答！BUZZ NOW!';
+        document.getElementById('buzzStatus').className = 'text-red-400 text-xl font-bold mt-2';
+      }
+      document.getElementById('buzzFeedback').textContent = '';
+    });
+
+    socket.on('buzz:locked', () => {
+      canBuzz = false;
+      const btn = document.getElementById('buzzBtn');
+      btn.disabled = true;
+      btn.classList.add('disabled');
+      btn.classList.remove('buzzed');
+    });
+
+    socket.on('buzz:first', ({ team, player }) => {
+      if (team === myTeam) {
+        document.getElementById('buzzBtn').classList.add('buzzed');
+        document.getElementById('buzzBtn').classList.remove('disabled');
+        document.getElementById('buzzStatus').textContent = '✅ 你的组抢到了！Your team buzzed!';
+        document.getElementById('buzzStatus').classList.remove('text-red-400');
+        document.getElementById('buzzStatus').classList.add('text-green-400');
+      } else {
+        document.getElementById('buzzStatus').textContent = `${team} 抢到了`;
+        document.getElementById('buzzStatus').classList.remove('text-red-400');
+        document.getElementById('buzzStatus').classList.add('text-yellow-400');
+      }
+    });
+
+    socket.on('answer:result', ({ team, correct, points }) => {
+      const fb = document.getElementById('buzzFeedback');
+      if (team === myTeam) {
+        if (correct) {
+          fb.textContent = `✅ +${points} 分！`;
+          fb.className = 'text-center text-lg font-bold h-8 text-green-400';
+        } else {
+          fb.textContent = `❌ ${points} 分`;
+          fb.className = 'text-center text-lg font-bold h-8 text-red-400';
+        }
+      }
+    });
+
+    socket.on('state:phase', (phase) => {
+      if (phase === 'board' || phase === 'lobby') {
+        document.getElementById('endScreen').classList.add('hidden');
+        if (myTeam) {
+          document.getElementById('buzzScreen').classList.remove('hidden');
+        }
+        document.getElementById('buzzStatus').textContent = '等待中 Waiting…';
+        document.getElementById('buzzStatus').className = 'text-white text-xl font-bold mt-2';
+        const btn = document.getElementById('buzzBtn');
+        btn.disabled = true;
+        btn.classList.add('disabled');
+        btn.classList.remove('buzzed');
+        canBuzz = false;
+      } else if (phase === 'end') {
+        showEndScreen({ teams: latestTeams, players: latestPlayers });
+      }
+    });
+
+    socket.on('state:final', (data) => {
+      showEndScreen(data);
+    });
+
+    socket.emit('request:state');
+
+    function joinGame() {
+      const name = document.getElementById('nameInput').value.trim();
+      const team = document.getElementById('teamInput').value.trim();
+      if (!name || !team) return;
+      socket.emit('player:join', { name, team });
+    }
+
+    function buzz() {
+      if (!canBuzz) return;
+      socket.emit('player:buzz');
+    }
+
+    function showEndScreen(data = {}) {
+      const teams = data.teams || [];
+      const players = data.players || [];
+      latestTeams = teams;
+      latestPlayers = players;
+      document.getElementById('joinScreen').classList.add('hidden');
+      document.getElementById('buzzScreen').classList.add('hidden');
+      document.getElementById('endScreen').classList.remove('hidden');
+      const myPlayer = players.find(p => p.name === myName && p.team === myTeam);
+      document.getElementById('myFinalInfo').textContent = myPlayer
+        ? `${myName} | ${myTeam} | ${myPlayer.score} 分`
+        : `${myName || 'Player'} | ${myTeam || 'Team'}`;
+      document.getElementById('finalPlayers').innerHTML = players.length ? players.map((p, i) =>
+        `<div class="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 ${p.name === myName && p.team === myTeam ? 'ring-2 ring-yellow-300' : ''}">
+          <span class="text-gray-300">#${i + 1} ${escapeHtml(p.name)} <span class="text-gray-500 text-xs">${escapeHtml(p.team)}</span></span>
+          <span class="text-yellow-400 font-black">${p.score}</span>
+        </div>`
+      ).join('') : '<p class="text-gray-500 text-sm">暂无个人排名 No players</p>';
+      document.getElementById('finalTeams').innerHTML = teams.length ? teams.map((t, i) =>
+        `<div class="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 ${t.name === myTeam ? 'ring-2 ring-blue-300' : ''}">
+          <span class="text-gray-300">#${i + 1} ${escapeHtml(t.name)}</span>
+          <span class="text-yellow-400 font-black">${t.score}</span>
+        </div>`
+      ).join('') : '<p class="text-gray-500 text-sm">暂无队伍排名 No teams</p>';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+  </script>
+</body>
+</html>
