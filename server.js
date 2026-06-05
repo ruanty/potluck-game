@@ -223,6 +223,11 @@ io.on('connection', (socket) => {
     });
   });
 
+  // Host manually stops any media currently playing on the display.
+  socket.on('host:stopMedia', () => {
+    io.emit('media:stop');
+  });
+
   socket.on('host:endGame', () => {
     state.phase = 'end';
     io.emit('state:phase', 'end');

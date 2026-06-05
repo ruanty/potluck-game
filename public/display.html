@@ -150,6 +150,12 @@
       }
     });
 
+    // Host pressed "Stop media" — pause whatever is playing (question or answer).
+    socket.on('media:stop', () => {
+      document.querySelectorAll('#qMedia audio, #qMedia video, #answerMedia audio, #answerMedia video')
+        .forEach(el => { try { el.pause(); } catch (e) { /* ignore */ } });
+    });
+
     socket.on('state:board', (board) => {
       renderBoard(board);
     });
