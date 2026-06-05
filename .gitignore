@@ -3,3 +3,6 @@ node_modules/
 tools/XHS-Downloader/
 downloads/
 public/media/
+
+# Out-of-band media bundle (transferred manually, not via git)
+potluck-media.zip
