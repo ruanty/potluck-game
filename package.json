@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node server.js",
     "tunnel": "bash tools/tunnel.sh",
+    "tunnel:stable": "bash tools/tunnel-stable.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
