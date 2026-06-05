@@ -44,8 +44,19 @@
   </style>
 </head>
 <body class="min-h-screen p-4 flex flex-col">
+  <!-- Lobby View: shown before the host clicks Start, while players join -->
+  <div id="lobbyView" class="flex-1 flex flex-col items-center justify-center">
+    <h1 class="text-5xl font-black text-white mb-2">🎯 Quiz Night</h1>
+    <p class="text-gray-400 text-xl mb-8">扫码加入游戏 / Scan to join</p>
+    <div class="bg-white rounded-2xl p-4 shadow-2xl">
+      <img id="lobbyQrImg" src="/qr" alt="扫码加入 Scan to join" width="320" height="320">
+    </div>
+    <p id="lobbyJoinUrl" class="text-blue-300 text-lg mt-6 break-all"></p>
+    <div id="lobbyTeams" class="mt-8 flex flex-wrap gap-3 justify-center max-w-3xl" aria-live="polite"></div>
+  </div>
+
   <!-- Board View -->
-  <div id="boardView" class="flex-1 flex flex-col">
+  <div id="boardView" class="hidden flex-1 flex flex-col">
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-3xl font-bold text-white">🎯 Quiz Night</h1>
       <div class="flex items-center gap-4">
@@ -108,9 +119,12 @@
       try {
         const url = (await (await fetch('/join-url', { cache: 'no-store' })).text()).trim();
         document.getElementById('joinUrlText').textContent = url;
+        document.getElementById('lobbyJoinUrl').textContent = url;
         if (url !== lastJoinUrl) {
           lastJoinUrl = url;
-          document.getElementById('qrImg').src = '/qr?t=' + Date.now();
+          const bust = '/qr?t=' + Date.now();
+          document.getElementById('qrImg').src = bust;
+          document.getElementById('lobbyQrImg').src = bust;
         }
       } catch (e) { /* keep last known */ }
     }
@@ -118,10 +132,11 @@
     setInterval(refreshJoinInfo, 15000);
 
     socket.on('state:phase', (phase) => {
+      document.getElementById('lobbyView').classList.toggle('hidden', phase !== 'lobby');
       document.getElementById('boardView').classList.toggle('hidden', phase !== 'board');
       document.getElementById('questionView').classList.toggle('hidden', phase !== 'question');
       document.getElementById('endView').classList.toggle('hidden', phase !== 'end');
-      document.getElementById('scoreboardFull').classList.toggle('hidden', phase === 'end');
+      document.getElementById('scoreboardFull').classList.toggle('hidden', phase === 'end' || phase === 'lobby');
       // Leaving the question view (e.g. back to board) must stop any playing media.
       if (phase !== 'question') {
         stopMedia(document.getElementById('qMedia'));
@@ -200,6 +215,7 @@
       teams = data;
       renderScoreboard();
       renderMiniScoreboard();
+      renderLobbyTeams();
     });
 
     socket.on('state:final', (data) => {
@@ -252,6 +268,37 @@
           <span class="text-gray-300 text-xs font-medium">${escapeHtml(t.name)}</span>
         </div>`;
       }).join('');
+    }
+
+    // Lobby: show each team and who has joined so far. Built with DOM nodes
+    // (textContent) so player-supplied names can't inject markup.
+    function renderLobbyTeams() {
+      const container = document.getElementById('lobbyTeams');
+      if (!container) return;
+      container.innerHTML = '';
+      teams.forEach((t, i) => {
+        const color = teamColors[i % teamColors.length];
+        const members = t.members || [];
+        const card = document.createElement('div');
+        card.className = 'bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-left min-w-[10rem]';
+
+        const title = document.createElement('p');
+        title.className = 'font-bold';
+        title.style.color = color;
+        title.textContent = `${t.name} (${members.length})`;
+
+        const body = document.createElement('p');
+        body.className = 'text-gray-300 text-sm mt-1';
+        if (members.length) {
+          body.textContent = members.join('、');
+        } else {
+          body.textContent = '等待加入…';
+          body.classList.add('text-gray-500');
+        }
+
+        card.append(title, body);
+        container.append(card);
+      });
     }
 
     function renderMiniScoreboard() {
