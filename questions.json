@@ -3,7 +3,7 @@
     "category": "儿童节目和动画片 Kids Shows & Cartoons",
     "points": 100,
     "text": "🎵 听音频，说出节目名称 / Listen and name this show",
-    "answer": "智慧树",
+    "answer": "智慧树 / Tree of Wisdom",
     "media": {
       "type": "audio",
       "url": "/media/zhihuishu.m4a"
@@ -17,7 +17,7 @@
     "category": "儿童节目和动画片 Kids Shows & Cartoons",
     "points": 200,
     "text": "🎵 听音频，说出节目名称 / Listen and name this show",
-    "answer": "快乐星球",
+    "answer": "快乐星球 / Happy Planet",
     "media": {
       "type": "audio",
       "url": "/media/kuailexingqiu.m4a"
@@ -31,7 +31,7 @@
     "category": "儿童节目和动画片 Kids Shows & Cartoons",
     "points": 300,
     "text": "🎵 听音频，说出节目名称 / Listen and name this show",
-    "answer": "家有儿女（中间转场）",
+    "answer": "家有儿女（中间转场）/ Home with Kids (transition)",
     "media": {
       "type": "audio",
       "url": "/media/jiayouernv-mid.m4a"
@@ -45,7 +45,7 @@
     "category": "儿童节目和动画片 Kids Shows & Cartoons",
     "points": 400,
     "text": "🎵 听音频，说出节目名称 / Listen and name this show",
-    "answer": "西游记 片头（云宫迅音）",
+    "answer": "西游记 片头（云宫迅音）/ Journey to the West — opening",
     "media": {
       "type": "audio",
       "url": "/media/xiyouji-intro.m4a"
@@ -59,7 +59,7 @@
     "category": "儿童节目和动画片 Kids Shows & Cartoons",
     "points": 500,
     "text": "🎵 听音频，说出节目名称 / Listen and name this show",
-    "answer": "哪吒传奇 片尾",
+    "answer": "哪吒传奇 片尾 / The Legend of Nezha — ending",
     "media": {
       "type": "audio",
       "url": "/media/nezha-outro.m4a"
@@ -73,7 +73,7 @@
     "category": "儿童节目和动画片 Kids Shows & Cartoons",
     "points": 600,
     "text": "🎵 听音频，说出节目名称 / Listen and name this show",
-    "answer": "聪明的一休",
+    "answer": "聪明的一休 / Ikkyū-san (Smart Ikkyu)",
     "media": {
       "type": "audio",
       "url": "/media/yixiu.m4a"
@@ -87,7 +87,7 @@
     "category": "儿童节目和动画片 Kids Shows & Cartoons",
     "points": 700,
     "text": "🎵 听音频，说出节目名称 / Listen and name this show",
-    "answer": "哪吒传奇 片头（小英雄哪吒）",
+    "answer": "哪吒传奇 片头（小英雄哪吒）/ The Legend of Nezha — opening",
     "media": {
       "type": "audio",
       "url": "/media/nezha.m4a"
@@ -101,7 +101,7 @@
     "category": "儿童节目和动画片 Kids Shows & Cartoons",
     "points": 800,
     "text": "🎵 听音频，说出节目名称 / Listen and name this show",
-    "answer": "家有儿女 片尾",
+    "answer": "家有儿女 片尾 / Home with Kids — ending",
     "media": {
       "type": "audio",
       "url": "/media/jiayouernv-outro.m4a"
@@ -115,7 +115,7 @@
     "category": "儿童节目和动画片 Kids Shows & Cartoons",
     "points": 900,
     "text": "🎵 听音频，说出节目名称 / Listen and name this show",
-    "answer": "大风车",
+    "answer": "大风车 / Big Pinwheel (Da Feng Che)",
     "media": {
       "type": "audio",
       "url": "/media/dafengche.m4a"
@@ -129,7 +129,7 @@
     "category": "电视节目 TV Shows",
     "points": 100,
     "text": "🎵 听音频，说出是什么节目 / Name this TV program",
-    "answer": "新闻联播 片头",
+    "answer": "新闻联播 片头 / Xinwen Lianbo (CCTV News) — opening",
     "media": {
       "type": "audio",
       "url": "/media/xinwen-intro.m4a"
@@ -143,7 +143,7 @@
     "category": "电视节目 TV Shows",
     "points": 200,
     "text": "🎵 听音频，说出是什么节目 / Name this TV program",
-    "answer": "新闻联播 片尾（重逢 Together Again）",
+    "answer": "新闻联播 片尾（重逢 Together Again）/ CCTV News — ending",
     "media": {
       "type": "audio",
       "url": "/media/xinwen-outro.m4a"
@@ -157,7 +157,7 @@
     "category": "电视节目 TV Shows",
     "points": 300,
     "text": "🎵 听音频，说出是什么节目 / Name this TV program",
-    "answer": "天气预报 片头",
+    "answer": "天气预报 片头 / Weather Forecast — opening",
     "media": {
       "type": "audio",
       "url": "/media/tianqi-intro.m4a"
@@ -171,7 +171,7 @@
     "category": "电视节目 TV Shows",
     "points": 400,
     "text": "🎵 听音频，说出是什么节目 / Name this TV program",
-    "answer": "同一首歌 片尾",
+    "answer": "同一首歌 片尾 / Tong Yi Shou Ge (“Same Song”) — ending",
     "media": {
       "type": "audio",
       "url": "/media/tv-tongyishouge-outro.m4a"
@@ -185,7 +185,7 @@
     "category": "电视节目 TV Shows",
     "points": 500,
     "text": "🎵 听音频，说出是什么节目 / Name this TV program",
-    "answer": "焦点访谈 片头",
+    "answer": "焦点访谈 片头 / Jiaodian Fangtan (Focus) — opening",
     "media": {
       "type": "audio",
       "url": "/media/jiaodian-intro.m4a"
@@ -199,7 +199,7 @@
     "category": "电视节目 TV Shows",
     "points": 600,
     "text": "🎵 听音频，说出是什么节目 / Name this TV program",
-    "answer": "2005 超级女声 主题曲《想唱就唱》",
+    "answer": "2005 超级女声 主题曲《想唱就唱》/ 2005 Super Girl theme “Sing If You Want”",
     "media": {
       "type": "audio",
       "url": "/media/chaonv05.m4a"
@@ -213,7 +213,7 @@
     "category": "广告 Slogans",
     "points": 100,
     "text": "🗣️ 听上句，接下句 / Hear the line, finish the slogan",
-    "answer": "牙牙乐",
+    "answer": "牙牙乐 / Yayale (toothpaste)",
     "media": {
       "type": "audio",
       "url": "/media/yayale.m4a"
@@ -227,7 +227,7 @@
     "category": "广告 Slogans",
     "points": 200,
     "text": "🗣️ 听上句，接下句 / Hear the line, finish the slogan",
-    "answer": "波力海苔",
+    "answer": "波力海苔 / Bolo Seaweed",
     "media": {
       "type": "audio",
       "url": "/media/ad-bolihaitai.m4a"
@@ -241,7 +241,7 @@
     "category": "广告 Slogans",
     "points": 300,
     "text": "🗣️ 听上句，接下句 / Hear the line, finish the slogan",
-    "answer": "步步高音乐手机",
+    "answer": "步步高音乐手机 / BBK Music Phone",
     "media": {
       "type": "audio",
       "url": "/media/bubugao.m4a"
@@ -255,7 +255,7 @@
     "category": "广告 Slogans",
     "points": 400,
     "text": "🗣️ 听上句，接下句 / Hear the line, finish the slogan",
-    "answer": "优乐美奶茶",
+    "answer": "优乐美奶茶 / U.Loveit Milk Tea",
     "media": {
       "type": "audio",
       "url": "/media/youlemei.m4a"
@@ -269,7 +269,7 @@
     "category": "广告 Slogans",
     "points": 500,
     "text": "🗣️ 听上句，接下句 / Hear the line, finish the slogan",
-    "answer": "恒源祥",
+    "answer": "恒源祥 / Hengyuanxiang",
     "media": {
       "type": "audio",
       "url": "/media/hengyuanxiang.m4a"
@@ -283,7 +283,7 @@
     "category": "广告 Slogans",
     "points": 600,
     "text": "🗣️ 听上句，接下句 / Hear the line, finish the slogan",
-    "answer": "脑白金",
+    "answer": "脑白金 / Naobaijin (Brain Platinum)",
     "media": {
       "type": "audio",
       "url": "/media/naobaijin.m4a"
@@ -297,7 +297,7 @@
     "category": "电视剧偶像剧 TV Dramas",
     "points": 100,
     "text": "🎬 听台词，说出剧名 / Name this drama:\n\n曾经有一份真挚的爱情摆在我的面前，我没有珍惜，等我失去的时候才后悔莫及，人间最痛苦的事莫过于此。如果上天能给我一次再来一次的机会，我会对那个女孩说三个字：我爱你。如果非要在这份爱上加上一个期限，我希望是……一万年",
-    "answer": "大话西游",
+    "answer": "大话西游 / A Chinese Odyssey",
     "media": null,
     "answerMedia": null
   },
@@ -305,7 +305,7 @@
     "category": "电视剧偶像剧 TV Dramas",
     "points": 200,
     "text": "🎬 听台词 / OST，说出剧名 / Name this drama",
-    "answer": "一起来看流星雨",
+    "answer": "一起来看流星雨 / Let's Watch the Meteor Shower",
     "media": {
       "type": "audio",
       "url": "/media/drama-liuxingyu.m4a"
@@ -319,7 +319,7 @@
     "category": "电视剧偶像剧 TV Dramas",
     "points": 300,
     "text": "🎬 听台词 / OST，说出剧名 / Name this drama",
-    "answer": "还珠格格 片尾（你是风儿我是沙）",
+    "answer": "还珠格格 片尾（你是风儿我是沙）/ My Fair Princess — ending",
     "media": {
       "type": "audio",
       "url": "/media/drama-huanzhu-outro.m4a"
@@ -333,7 +333,7 @@
     "category": "电视剧偶像剧 TV Dramas",
     "points": 400,
     "text": "🎬 听台词 / OST，说出剧名 / Name this drama",
-    "answer": "甄嬛传",
+    "answer": "甄嬛传 / Empresses in the Palace",
     "media": {
       "type": "audio",
       "url": "/media/drama-zhenhuan.m4a"
@@ -347,7 +347,7 @@
     "category": "电视剧偶像剧 TV Dramas",
     "points": 500,
     "text": "🎬 听台词 / OST，说出剧名 / Name this drama",
-    "answer": "无间道",
+    "answer": "无间道 / Infernal Affairs",
     "media": {
       "type": "audio",
       "url": "/media/drama-wujiandao.m4a"
@@ -361,7 +361,7 @@
     "category": "电视剧偶像剧 TV Dramas",
     "points": 600,
     "text": "🎬 听台词 / OST，说出剧名 / Name this drama",
-    "answer": "命中注定我爱你 OST",
+    "answer": "命中注定我爱你 OST / Fated to Love You OST",
     "media": {
       "type": "audio",
       "url": "/media/drama-mingzhong.m4a"
@@ -375,7 +375,7 @@
     "category": "电视剧偶像剧 TV Dramas",
     "points": 700,
     "text": "🎬 听台词 / OST，说出剧名 / Name this drama",
-    "answer": "我可能不会爱你 OST",
+    "answer": "我可能不会爱你 OST / In Time with You OST",
     "media": {
       "type": "audio",
       "url": "/media/drama-wokeneng.m4a"
@@ -389,7 +389,7 @@
     "category": "电视剧偶像剧 TV Dramas",
     "points": 800,
     "text": "🎬 听台词 / OST，说出剧名 / Name this drama",
-    "answer": "恶作剧之吻 OST",
+    "answer": "恶作剧之吻 OST / It Started with a Kiss OST",
     "media": {
       "type": "audio",
       "url": "/media/drama-ezuoju.m4a"
@@ -403,7 +403,7 @@
     "category": "电视剧偶像剧 TV Dramas",
     "points": 900,
     "text": "🎬 听台词 / OST，说出剧名 / Name this drama",
-    "answer": "流星花园",
+    "answer": "流星花园 / Meteor Garden",
     "media": {
       "type": "audio",
       "url": "/media/drama-liuxinghuayuan.m4a"
@@ -417,7 +417,7 @@
     "category": "电视剧偶像剧 TV Dramas",
     "points": 1000,
     "text": "🎬 听台词 / OST，说出剧名 / Name this drama",
-    "answer": "法证先锋 OST",
+    "answer": "法证先锋 OST / Forensic Heroes OST",
     "media": {
       "type": "audio",
       "url": "/media/drama-fazheng.m4a"
@@ -430,8 +430,8 @@
   {
     "category": "又红又专 Red Classics",
     "points": 100,
-    "text": "红领巾为什么是红色的？",
-    "answer": "它代表红旗的一角，象征革命先烈的鲜血染红了革命旗帜",
+    "text": "红领巾为什么是红色的？/ Why is the red scarf red?",
+    "answer": "它代表红旗的一角，象征革命先烈的鲜血染红了革命旗帜 / It is a corner of the red flag — symbolizing the blood of revolutionary martyrs",
     "media": {
       "type": "image",
       "url": "/media/red-honglingjin-q.jpg"
@@ -441,8 +441,8 @@
   {
     "category": "又红又专 Red Classics",
     "points": 200,
-    "text": "🎵 播放《少先队队歌》，唱出 / 说出第三句歌词",
-    "answer": "爱祖国爱人民",
+    "text": "🎵 播放《少先队队歌》，唱出 / 说出第三句歌词 / Play the Young Pioneers anthem — sing or say the third line",
+    "answer": "爱祖国爱人民 / “Love the motherland, love the people”",
     "media": {
       "type": "audio",
       "url": "/media/shaoxiandui.m4a"
@@ -456,7 +456,7 @@
     "category": "又红又专 Red Classics",
     "points": 300,
     "text": "🎵 听音频，说出歌名 / Name this song",
-    "answer": "七子之歌",
+    "answer": "七子之歌 / Song of the Seven Sons",
     "media": {
       "type": "audio",
       "url": "/media/red-qizizhige.m4a"
@@ -469,24 +469,24 @@
   {
     "category": "又红又专 Red Classics",
     "points": 400,
-    "text": "说出 3 套中小学生广播体操",
-    "answer": "如：第三套《七彩阳光》《希望风帆》《舞动青春》《放飞理想》；第二套《初升的太阳》《雏鹰起飞》《青春的活力》《时代在召唤》",
+    "text": "说出 3 套中小学生广播体操 / Name 3 sets of school radio calisthenics",
+    "answer": "如：第三套《七彩阳光》《希望风帆》《舞动青春》《放飞理想》；第二套《初升的太阳》《雏鹰起飞》《青春的活力》《时代在召唤》/ e.g. 3rd set: Colorful Sunshine, Sail of Hope, Dancing Youth, Flying Dreams",
     "media": null,
     "answerMedia": null
   },
   {
     "category": "又红又专 Red Classics",
     "points": 500,
-    "text": "说出 4 个眼保健操的环节并做对姿势",
-    "answer": "揉天应穴、挤按睛明穴、按揉四白穴、按太阳穴轮刮眼眶",
+    "text": "说出 4 个眼保健操的环节并做对姿势 / Name 4 steps of the eye exercises and do them correctly",
+    "answer": "揉天应穴、挤按睛明穴、按揉四白穴、按太阳穴轮刮眼眶 / Press the Tianying, Jingming, Sibai and Taiyang acupoints",
     "media": null,
     "answerMedia": null
   },
   {
     "category": "又红又专 Red Classics",
     "points": 600,
-    "text": "《有的人》描述的是谁？",
-    "answer": "鲁迅",
+    "text": "《有的人》描述的是谁？/ Who is the poem “Some People” about?",
+    "answer": "鲁迅 / Lu Xun",
     "media": {
       "type": "image",
       "url": "/media/red-youderen-q.jpeg"
@@ -496,8 +496,8 @@
   {
     "category": "童年游戏和回忆 Childhood Games & Memories",
     "points": 100,
-    "text": "摩尔庄园里的宠物是什么？",
-    "answer": "拉姆",
+    "text": "摩尔庄园里的宠物是什么？/ What is the pet in Mole's World?",
+    "answer": "拉姆 / Lambo",
     "media": {
       "type": "image",
       "url": "/media/child-moer-q.jpeg"
@@ -507,8 +507,8 @@
   {
     "category": "童年游戏和回忆 Childhood Games & Memories",
     "points": 200,
-    "text": "QQ 空间的「钻」是什么？",
-    "answer": "黄钻",
+    "text": "QQ 空间的「钻」是什么？/ What is the QZone “diamond”?",
+    "answer": "黄钻 / Yellow Diamond",
     "media": null,
     "answerMedia": {
       "type": "image",
@@ -518,8 +518,8 @@
   {
     "category": "童年游戏和回忆 Childhood Games & Memories",
     "points": 300,
-    "text": "丢手绢，丢手绢，下一句是什么？",
-    "answer": "轻轻地放在小朋友的后面",
+    "text": "丢手绢，丢手绢，下一句是什么？/ “Drop the handkerchief…” — what's the next line?",
+    "answer": "轻轻地放在小朋友的后面 / “gently place it behind a friend”",
     "media": {
       "type": "image",
       "url": "/media/child-diushoujuan-q.png"
@@ -529,8 +529,8 @@
   {
     "category": "童年游戏和回忆 Childhood Games & Memories",
     "points": 400,
-    "text": "阿鲁巴：看图说话",
-    "answer": "阿鲁巴",
+    "text": "阿鲁巴：看图说话 / Aluba: describe the picture",
+    "answer": "阿鲁巴 / Aluba",
     "media": {
       "type": "image",
       "url": "/media/child-aluba-q.jpg"
@@ -541,7 +541,7 @@
     "category": "童年游戏和回忆 Childhood Games & Memories",
     "points": 500,
     "text": "🎵 听铃声，说出是什么 / Name this ringtone",
-    "answer": "诺基亚铃声",
+    "answer": "诺基亚铃声 / Nokia ringtone",
     "media": {
       "type": "audio",
       "url": "/media/child-nokia.m4a"
@@ -554,8 +554,8 @@
   {
     "category": "童年游戏和回忆 Childhood Games & Memories",
     "points": 600,
-    "text": "🎵 听音频：什么情况下会放这首歌？",
-    "answer": "学校 / 商场关门",
+    "text": "🎵 听音频：什么情况下会放这首歌？/ When is this song usually played?",
+    "answer": "学校 / 商场关门 / When a school or mall is closing",
     "media": {
       "type": "audio",
       "url": "/media/tianqi-intro.m4a"
