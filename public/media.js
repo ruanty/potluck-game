@@ -15,6 +15,20 @@ function renderMedia(media, opts = {}) {
   return '';
 }
 
+// Pause and unload any <audio>/<video> inside a container so removing it
+// from the DOM reliably stops playback (some browsers keep audio going).
+function stopMedia(container) {
+  if (!container) return;
+  container.querySelectorAll('audio, video').forEach(el => {
+    try {
+      el.pause();
+      el.removeAttribute('src');
+      el.querySelectorAll('source').forEach(s => s.removeAttribute('src'));
+      el.load();
+    } catch (e) { /* ignore */ }
+  });
+}
+
 function escapeMediaAttr(value) {
   return String(value).replace(/[&<>"']/g, ch => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'

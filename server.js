@@ -2,12 +2,56 @@ const express = require('express');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const os = require('os');
+const QRCode = require('qrcode');
 
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
+const PORT = process.env.PORT || 3000;
+
+// First non-internal IPv4 address — the LAN URL phones use on the same Wi-Fi.
+function getLanIp() {
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) return net.address;
+    }
+  }
+  return 'localhost';
+}
+
+// The URL players should open to join. A public tunnel (cloudflared) sets
+// PUBLIC_URL so cellular / off-network phones work; otherwise use the LAN IP.
+function getJoinBaseUrl() {
+  if (process.env.PUBLIC_URL) return process.env.PUBLIC_URL.replace(/\/+$/, '');
+  return `http://${getLanIp()}:${PORT}`;
+}
+function getPlayerJoinUrl() {
+  return `${getJoinBaseUrl()}/player.html`;
+}
+
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Plain-text join URL (the display polls this to render its own QR).
+app.get('/join-url', (req, res) => {
+  res.type('text/plain').send(getPlayerJoinUrl());
+});
+
+// Server-rendered QR PNG for the player join URL. Works fully offline — no
+// external QR service — which matters at a venue with flaky internet.
+app.get('/qr', async (req, res) => {
+  try {
+    const png = await QRCode.toBuffer(getPlayerJoinUrl(), {
+      type: 'png', width: 320, margin: 1,
+      color: { dark: '#000000', light: '#ffffff' },
+    });
+    res.type('png').set('Cache-Control', 'no-store').send(png);
+  } catch (e) {
+    res.status(500).send('qr error');
+  }
+});
 
 const DEFAULT_TEAMS = [
   '江浙沪',
@@ -403,16 +447,12 @@ function getBoardData() {
   });
 }
 
-const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Local: http://localhost:${PORT}`);
-  const nets = require('os').networkInterfaces();
-  for (const name of Object.keys(nets)) {
-    for (const net of nets[name]) {
-      if (net.family === 'IPv4' && !net.internal) {
-        console.log(`Network: http://${net.address}:${PORT}`);
-      }
-    }
+  console.log(`Local:   http://localhost:${PORT}`);
+  console.log(`Network: http://${getLanIp()}:${PORT}`);
+  if (process.env.PUBLIC_URL) {
+    console.log(`Public:  ${getJoinBaseUrl()}  (tunnel — works on cellular)`);
   }
+  console.log(`Players join: ${getPlayerJoinUrl()}`);
 });

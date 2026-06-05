@@ -12,21 +12,23 @@ Use this skill when the user asks to download Xiaohongshu, RedNote, XHS, or 小�
 
 The local downloader is installed at:
 
-`/Users/ruanty/Downloads/Coding_Projects_Vibe/quiz-game/tools/XHS-Downloader`
+`/Users/kaiweiwu/Documents/Dev/potluck-game/tools/XHS-Downloader`
 
 Default output directory:
 
-`/Users/ruanty/Downloads/Coding_Projects_Vibe/quiz-game/downloads/xiaohongshu`
+`/Users/kaiweiwu/Documents/Dev/potluck-game/downloads/xiaohongshu`
 
 ## Basic Command
 
 Run from the downloader directory:
 
 ```bash
-uv run main.py --url "<XHS_LINK>" --work_path "/Users/ruanty/Downloads/Coding_Projects_Vibe/quiz-game/downloads/xiaohongshu" --language en_US
+uv run main.py --url "<XHS_LINK>" --work_path "/Users/kaiweiwu/Documents/Dev/potluck-game/downloads/xiaohongshu" --language en_US
 ```
 
 Multiple links can be passed inside the quoted `--url` value separated by spaces.
+
+The first run installs Python dependencies via `uv` (may take a minute). If install fails with a `mirrors.ustc.edu.cn` connection/TLS error, the upstream `pyproject.toml` defaulted to a Chinese PyPI mirror — it has been switched to `https://pypi.org/simple`. To override at runtime: prefix the command with `env UV_INDEX_URL=https://pypi.org/simple`.
 
 ## Optional Cookie
 

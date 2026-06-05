@@ -1,4 +1,5 @@
 node_modules/
 .DS_Store
-tools/XHS-Downloader/.venv/
+tools/XHS-Downloader/
+downloads/
 public/media/

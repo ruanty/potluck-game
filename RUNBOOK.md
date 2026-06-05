@@ -92,16 +92,31 @@ Recommended formats:
 - Audio: `.mp3`, `.m4a`
 - Video: `.mp4`
 
-## Public Access
+## Joining (QR code)
 
-For the simplest free public link, use a tunnel pointed at the running port.
+The Display (`/display.html`) shows a **scan-to-join QR code** in the top-right of
+the board. Players point their phone camera at it to open the join page — no typing
+URLs. The QR always points at the current join URL (LAN by default, tunnel if running).
 
-Options:
+## Public Access (cellular / unstable Wi-Fi)
 
-- `ngrok`: simple, but usually requires login/authtoken.
-- `cloudflared`: free temporary tunnel, requires installing `cloudflared`.
+Same Wi-Fi is simplest and lowest-latency. But if some phones are on cellular, or the
+venue Wi-Fi is flaky, run the bundled tunnel instead of `npm start`:
 
-If public access is not required, same Wi-Fi access through the printed `Network` URL is simpler and more reliable.
+```bash
+npm run tunnel
+```
+
+This:
+
+1. Installs `cloudflared` via Homebrew on first run (free, no login).
+2. Opens a public `https://…trycloudflare.com` URL anyone can reach from any network.
+3. Starts the server and points the in-game QR code at that public URL automatically.
+
+Share the printed `Players join:` URL (or just let people scan the QR on the big screen).
+`Ctrl-C` stops both the tunnel and the server.
+
+`PORT=3001 npm run tunnel` if port 3000 is busy. `ngrok` also works but needs a login.
 
 ## Notes
 

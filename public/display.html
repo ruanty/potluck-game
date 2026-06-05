@@ -48,7 +48,18 @@
   <div id="boardView" class="flex-1 flex flex-col">
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-3xl font-bold text-white">🎯 Quiz Night</h1>
-      <div id="miniScoreboard" class="flex gap-4 tabular-nums" aria-live="polite"></div>
+      <div class="flex items-center gap-4">
+        <!-- Scan-to-join QR (handy for late joiners; always visible on the board) -->
+        <div id="joinQr" class="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2 border border-white/10">
+          <img id="qrImg" src="/qr" alt="扫码加入 Scan to join" width="84" height="84" class="rounded bg-white p-1">
+          <div class="text-left leading-tight">
+            <p class="text-white text-sm font-bold">📱 扫码加入</p>
+            <p class="text-gray-400 text-xs">Scan to join</p>
+            <p id="joinUrlText" class="text-blue-300 text-xs break-all max-w-[14rem]"></p>
+          </div>
+        </div>
+        <div id="miniScoreboard" class="flex gap-4 tabular-nums" aria-live="polite"></div>
+      </div>
     </div>
     <div id="boardGrid" class="flex-1 grid gap-2"></div>
   </div>
@@ -90,11 +101,34 @@
     let teams = [];
     const teamColors = ['#ff4444', '#44aaff', '#44ff44', '#ffaa00', '#ff44ff', '#44ffff', '#ff8844', '#88ff44'];
 
+    // Show the player join URL under the QR, and refresh both if it changes
+    // (e.g. a cloudflared tunnel comes up after the display is already open).
+    let lastJoinUrl = '';
+    async function refreshJoinInfo() {
+      try {
+        const url = (await (await fetch('/join-url', { cache: 'no-store' })).text()).trim();
+        document.getElementById('joinUrlText').textContent = url;
+        if (url !== lastJoinUrl) {
+          lastJoinUrl = url;
+          document.getElementById('qrImg').src = '/qr?t=' + Date.now();
+        }
+      } catch (e) { /* keep last known */ }
+    }
+    refreshJoinInfo();
+    setInterval(refreshJoinInfo, 15000);
+
     socket.on('state:phase', (phase) => {
       document.getElementById('boardView').classList.toggle('hidden', phase !== 'board');
       document.getElementById('questionView').classList.toggle('hidden', phase !== 'question');
       document.getElementById('endView').classList.toggle('hidden', phase !== 'end');
       document.getElementById('scoreboardFull').classList.toggle('hidden', phase === 'end');
+      // Leaving the question view (e.g. back to board) must stop any playing media.
+      if (phase !== 'question') {
+        stopMedia(document.getElementById('qMedia'));
+        stopMedia(document.getElementById('answerMedia'));
+        document.getElementById('qMedia').innerHTML = '';
+        document.getElementById('answerMedia').innerHTML = '';
+      }
       if (phase === 'question') {
         document.getElementById('buzzIndicator').innerHTML = '<p class="text-gray-500 text-xl">等待抢答 Waiting for buzz…</p>';
         document.getElementById('answerReveal').classList.add('hidden');
@@ -115,6 +149,9 @@
     });
 
     socket.on('state:answer', ({ answer, answerMedia }) => {
+      // Stop the question media so it doesn't play over the answer media.
+      stopMedia(document.getElementById('qMedia'));
+      document.getElementById('qMedia').innerHTML = '';
       document.getElementById('answerReveal').classList.remove('hidden');
       document.getElementById('answerText').textContent = answer;
       document.getElementById('answerMedia').innerHTML = answerMedia ? renderMedia(answerMedia, { autoplay: true }) : '';
