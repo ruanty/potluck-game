@@ -45,17 +45,25 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 echo "Starting ngrok → $PUBLIC_URL (port $PORT) …"
-ngrok http "$PORT" --domain "$NGROK_DOMAIN" --log stdout >/tmp/ngrok-quiz.log 2>&1 &
+ngrok http "$PORT" --url "$PUBLIC_URL" --log stdout >/tmp/ngrok-quiz.log 2>&1 &
 NG_PID=$!
 
-# Wait until ngrok reports the tunnel is established (or fails fast).
+# Wait until ngrok confirms the tunnel is established (via its local API),
+# or fail fast if the ngrok process dies (bad token, domain already in use…).
+established=""
 for i in $(seq 1 40); do
-  grep -q "started tunnel\|url=$PUBLIC_URL" /tmp/ngrok-quiz.log && break
+  if curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -q "$PUBLIC_URL"; then
+    established="yes"; break
+  fi
   if ! kill -0 "$NG_PID" 2>/dev/null; then
     echo "ERROR: ngrok exited. Log:"; cat /tmp/ngrok-quiz.log; exit 1
   fi
   sleep 0.5
 done
+if [ -z "$established" ]; then
+  echo "WARNING: ngrok did not confirm the tunnel in time. Recent log:"
+  tail -5 /tmp/ngrok-quiz.log
+fi
 
 echo ""
 echo "============================================================"
