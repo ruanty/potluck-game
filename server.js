@@ -143,9 +143,8 @@ io.on('connection', (socket) => {
     state.currentBuzzPlayer = null;
     state.answerShown = false;
     const opensWithMedia = ['audio', 'video'].includes(q.media?.type);
-    if (opensWithMedia) {
-      state.buzzLocked = false;
-    }
+    // Every question auto-opens buzzing now (not just media ones).
+    state.buzzLocked = false;
     io.emit('state:phase', 'question');
     io.emit('state:question', {
       category: q.category,
@@ -155,17 +154,10 @@ io.on('connection', (socket) => {
       answer: q.answer,
       answerMedia: q.answerMedia || null,
     });
-    if (opensWithMedia) {
-      io.emit('buzz:open', { reason: 'media', excludedTeams: getExcludedBuzzTeams() });
-    }
-  });
-
-  socket.on('host:openBuzz', () => {
-    state.buzzLocked = false;
-    state.buzzes = [];
-    state.currentBuzzTeam = null;
-    state.currentBuzzPlayer = null;
-    io.emit('buzz:open', { excludedTeams: getExcludedBuzzTeams() });
+    io.emit('buzz:open', {
+      reason: opensWithMedia ? 'media' : undefined,
+      excludedTeams: getExcludedBuzzTeams(),
+    });
   });
 
   socket.on('host:correct', () => {
@@ -224,6 +216,12 @@ io.on('connection', (socket) => {
   // Host manually stops any media currently playing on the display.
   socket.on('host:stopMedia', () => {
     io.emit('media:stop');
+  });
+
+  // Host manually starts / resumes media on the display (e.g. after a buzz
+  // auto-paused the audio).
+  socket.on('host:startMedia', () => {
+    io.emit('media:resume');
   });
 
   socket.on('host:endGame', () => {

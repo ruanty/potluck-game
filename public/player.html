@@ -104,16 +104,29 @@
 
   <script>
     const socket = io();
-    let myTeam = '';
-    let myName = '';
+    // Restore identity from localStorage so a full page reload (e.g. a phone
+    // evicting the backgrounded tab after a call) still knows who they are.
+    let myTeam = localStorage.getItem('quiz:team') || '';
+    let myName = localStorage.getItem('quiz:name') || '';
     let canBuzz = false;
     let latestTeams = [];
     let latestPlayers = [];
 
-    // Tunnels (cloudflared/ngrok) can drop idle WebSockets; Socket.IO then
-    // reconnects with a NEW socket id. The server tracks players by socket id,
-    // so we must re-announce ourselves on every (re)connect or the server
-    // won't know who we are and buzzes will be silently ignored.
+    function rememberIdentity(name, team) {
+      myName = name;
+      myTeam = team;
+      try {
+        localStorage.setItem('quiz:name', name);
+        localStorage.setItem('quiz:team', team);
+      } catch (e) { /* private mode etc. — in-memory still works */ }
+    }
+
+    // Re-announce ourselves on every (re)connect. Two cases this covers:
+    //  - Tunnels drop idle WebSockets; Socket.IO reconnects with a NEW socket
+    //    id, and the server tracks players by socket id, so without rejoining
+    //    the server wouldn't know us and buzzes would be silently ignored.
+    //  - A full page reload restores myName/myTeam from localStorage above, so
+    //    a player who left to take a call comes back able to buzz immediately.
     socket.on('connect', () => {
       if (myName && myTeam) {
         socket.emit('player:join', { name: myName, team: myTeam });
@@ -137,8 +150,7 @@
     });
 
     socket.on('player:joined', ({ name, team }) => {
-      myName = name;
-      myTeam = team;
+      rememberIdentity(name, team);
       document.getElementById('joinScreen').classList.add('hidden');
       document.getElementById('buzzScreen').classList.remove('hidden');
       document.getElementById('endScreen').classList.add('hidden');
@@ -146,8 +158,7 @@
     });
 
     socket.on('player:updated', ({ name, team }) => {
-      myName = name;
-      myTeam = team;
+      rememberIdentity(name, team);
       document.getElementById('playerInfo').textContent = `${name} | ${team}`;
     });
 

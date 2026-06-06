@@ -43,10 +43,10 @@
           <div id="buzzSection" class="border-t border-white/10 pt-4">
             <div id="buzzInfo" class="text-gray-400 mb-3" aria-live="polite">等待中…</div>
             <div class="flex flex-wrap gap-2" role="toolbar" aria-label="Answer controls">
-              <button onclick="socket.emit('host:openBuzz')" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:outline-none" aria-label="Open Buzz">🔴 开放抢答 Open Buzz</button>
               <button onclick="socket.emit('host:correct')" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-green-300 focus-visible:outline-none" aria-label="Correct">✅ 正确 Correct</button>
               <button onclick="socket.emit('host:wrong')" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:outline-none" aria-label="Wrong">❌ 错误 Wrong</button>
               <button onclick="socket.emit('host:showAnswer')" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:outline-none" aria-label="Show Answer">👁 显示答案 Show Answer</button>
+              <button onclick="socket.emit('host:startMedia')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:outline-none" aria-label="Start media">▶️ 播放媒体 Start Media</button>
               <button onclick="socket.emit('host:stopMedia')" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:outline-none" aria-label="Stop media">⏸ 停止播放 Stop Media</button>
               <button onclick="socket.emit('host:skip')" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-gray-300 focus-visible:outline-none" aria-label="Back to board">⏭ 回题板 / 下一题 Board</button>
             </div>

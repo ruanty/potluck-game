@@ -156,6 +156,12 @@
         .forEach(el => { try { el.pause(); } catch (e) { /* ignore */ } });
     });
 
+    // Host pressed "Start media" — resume whatever is loaded (question or answer).
+    socket.on('media:resume', () => {
+      document.querySelectorAll('#qMedia audio, #qMedia video, #answerMedia audio, #answerMedia video')
+        .forEach(el => { try { const p = el.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* ignore */ } });
+    });
+
     socket.on('state:board', (board) => {
       renderBoard(board);
     });
@@ -179,6 +185,10 @@
     });
 
     socket.on('buzz:first', ({ team, player }) => {
+      // A buzz auto-pauses the question media so everyone can hear the answer.
+      // We only pause (not clear) so the host can resume it with "Start media".
+      document.querySelectorAll('#qMedia audio, #qMedia video')
+        .forEach(el => { try { el.pause(); } catch (e) { /* ignore */ } });
       const color = getTeamColor(team);
       document.getElementById('buzzIndicator').innerHTML =
         `<p class="text-3xl font-black" style="color:${color}">🔔 ${escapeHtml(team)}</p>
