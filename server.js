@@ -199,14 +199,12 @@ io.on('connection', (socket) => {
     io.emit('state:teams', getTeamsData());
     io.emit('state:players', getPlayersData());
     io.emit('answer:result', { team, player, correct: false, points: -state.currentQuestion.points });
-    if (hasRemainingBuzzTeams()) {
-      state.buzzLocked = false;
-      io.emit('buzz:open', { reason: 'retry', excludedTeams: getExcludedBuzzTeams() });
-    } else {
-      state.buzzes = [];
-      state.buzzLocked = false;
-      io.emit('buzz:open', { reason: 'allRetry', excludedTeams: [] });
-    }
+    // Reopen buzzing automatically to ALL teams — including the team that just
+    // answered wrong. Clearing state.buzzes drops the exclusion so everyone
+    // (the wrong team included) can buzz again without the host re-opening.
+    state.buzzes = [];
+    state.buzzLocked = false;
+    io.emit('buzz:open', { reason: 'allRetry', excludedTeams: [] });
   });
 
   socket.on('host:skip', () => {
@@ -417,10 +415,6 @@ function addPlayerScore(team, name, delta) {
 
 function getExcludedBuzzTeams() {
   return state.buzzes.map(buzz => buzz.team);
-}
-
-function hasRemainingBuzzTeams() {
-  return getTeamsData().some(team => !getExcludedBuzzTeams().includes(team.name));
 }
 
 function getTeamsData() {

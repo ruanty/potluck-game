@@ -110,6 +110,19 @@
     let latestTeams = [];
     let latestPlayers = [];
 
+    // Tunnels (cloudflared/ngrok) can drop idle WebSockets; Socket.IO then
+    // reconnects with a NEW socket id. The server tracks players by socket id,
+    // so we must re-announce ourselves on every (re)connect or the server
+    // won't know who we are and buzzes will be silently ignored.
+    socket.on('connect', () => {
+      if (myName && myTeam) {
+        socket.emit('player:join', { name: myName, team: myTeam });
+        // Re-sync the current phase/buzz state so the button re-enables if
+        // buzzing is open right now (otherwise it stays stuck disabled).
+        socket.emit('request:state');
+      }
+    });
+
     socket.on('state:teams', (teams) => {
       latestTeams = teams;
       const container = document.getElementById('existingTeams');
