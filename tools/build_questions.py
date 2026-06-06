@@ -94,7 +94,7 @@ Q = [
     q(CHILD, 300, "丢手绢，丢手绢，下一句是什么？/ “Drop the handkerchief…” — what's the next line?",
       "轻轻地放在小朋友的后面 / “gently place it behind a friend”",
       media=img("child-diushoujuan-q.png")),
-    q(CHILD, 400, "阿鲁巴：看图说话 / Aluba: describe the picture", "阿鲁巴 / Aluba",
+    q(CHILD, 400, "看图，说出这个童年游戏/动作 / Look at the picture — name this childhood game/behavior", "阿鲁巴 / Aluba",
       media=img("child-aluba-q.jpg")),
     g(CHILD, 500, "🎵 听铃声，说出是什么 / Name this ringtone", "诺基亚铃声 / Nokia ringtone", "child-nokia"),
     q(CHILD, 600, "🎵 听音频：什么情况下会放这首歌？/ When is this song usually played?",
