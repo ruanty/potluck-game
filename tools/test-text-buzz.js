@@ -37,7 +37,7 @@ function makePlayer(name, team) {
 
   // Select the text-only question -> buzz should auto-open.
   buzzOpenCount = 0;
-  host.emit('host:selectQuestion', { category: textQ.category, points: textQ.points });
+  host.emit('host:selectQuestion', { id: textQ.id });
   await sleep(500);
   const autoOpenedBuzz = buzzOpenCount >= 1;
   const noMedia = questionMedia == null;

@@ -52,7 +52,7 @@ function makePlayer(name, team) {
 
   // 1) Select an audio question -> buzz auto-opens + question pushed to display.
   buzzOpenCount = 0;
-  host.emit('host:selectQuestion', { category: audioQ.category, points: audioQ.points });
+  host.emit('host:selectQuestion', { id: audioQ.id });
   await sleep(500);
   const autoOpenedBuzz = buzzOpenCount >= 1;
   const aCanBuzzAtStart = a.canBuzz();

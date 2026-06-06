@@ -37,7 +37,7 @@ function makePlayer(name, team) {
   await sleep(500);
 
   // Now open an audio question -> buzz auto-opens.
-  host.emit('host:selectQuestion', { category: audioQ.category, points: audioQ.points });
+  host.emit('host:selectQuestion', { id: audioQ.id });
   await sleep(500);
 
   console.log('after reconnect, canBuzz =', p.canBuzz());

@@ -100,9 +100,9 @@
       renderHostBoard(data);
     });
 
-    socket.on('state:question', ({ category, points, text, media, answer, answerMedia }) => {
+    socket.on('state:question', ({ label, category, points, text, media, answer, answerMedia }) => {
       document.getElementById('currentQ').classList.remove('hidden');
-      document.getElementById('hqCategory').textContent = category;
+      document.getElementById('hqCategory').textContent = label ? `${label}  ${category}` : category;
       document.getElementById('hqPoints').textContent = `${points} pts`;
       document.getElementById('hqText').textContent = text;
       document.getElementById('hqMedia').innerHTML = media ? renderMedia(media, { maxHeight: '32' }) : '';
@@ -184,18 +184,18 @@
           board.map(cat => {
             const q = cat.questions[row];
             if (!q) return '<div></div>';
-            if (q.answered) return `<div class="text-center p-1 rounded bg-white/5 text-gray-600 text-xs line-through" aria-hidden="true">${q.points}</div>`;
-            return `<button class="question-btn text-center p-1 rounded bg-blue-900 hover:bg-blue-700 text-yellow-300 text-sm font-bold focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:outline-none" data-category="${escapeAttr(cat.category)}" data-points="${q.points}" aria-label="${escapeAttr(cat.category)} ${q.points} points">${q.points}</button>`;
+            if (q.answered) return `<div class="text-center p-1 rounded bg-white/5 text-gray-600 text-xs line-through" aria-hidden="true">${q.label} · ${q.points}</div>`;
+            return `<button class="question-btn text-center p-1 rounded bg-blue-900 hover:bg-blue-700 text-yellow-300 text-sm font-bold focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:outline-none" data-id="${escapeAttr(q.id)}" aria-label="${escapeAttr(cat.category)} ${q.label} ${q.points} points"><span class="block text-gray-300 text-xs">${q.label}</span>${q.points}</button>`;
           }).join('')
         ).join('') +
         '</div>';
       container.querySelectorAll('.question-btn').forEach(btn => {
-        btn.addEventListener('click', () => selectQ(btn.dataset.category, Number(btn.dataset.points)));
+        btn.addEventListener('click', () => selectQ(btn.dataset.id));
       });
     }
 
-    function selectQ(category, points) {
-      socket.emit('host:selectQuestion', { category, points });
+    function selectQ(id) {
+      socket.emit('host:selectQuestion', { id });
     }
 
     function renderTeamsList(teams) {

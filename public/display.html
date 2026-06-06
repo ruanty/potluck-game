@@ -166,8 +166,8 @@
       renderBoard(board);
     });
 
-    socket.on('state:question', ({ category, points, text, media }) => {
-      document.getElementById('qCategory').textContent = category;
+    socket.on('state:question', ({ label, category, points, text, media }) => {
+      document.getElementById('qCategory').textContent = label ? `${label}  ${category}` : category;
       document.getElementById('qPoints').textContent = `${points} pts`;
       document.getElementById('qText').textContent = text;
       document.getElementById('qMedia').innerHTML = renderMedia(media, { autoplay: true });
@@ -260,8 +260,16 @@
           const q = cat.questions[row];
           const cell = document.createElement('div');
           if (q) {
-            cell.className = `board-cell rounded-lg flex items-center justify-center ${q.answered ? 'answered' : ''}`;
-            cell.innerHTML = q.answered ? '' : `<span class="text-yellow-300 text-2xl md:text-3xl font-black">${q.points}</span>`;
+            cell.className = `board-cell rounded-lg flex flex-col items-center justify-center ${q.answered ? 'answered' : ''}`;
+            if (!q.answered) {
+              const label = document.createElement('span');
+              label.className = 'text-gray-300 text-xs md:text-sm font-bold';
+              label.textContent = q.label;
+              const pts = document.createElement('span');
+              pts.className = 'text-yellow-300 text-2xl md:text-3xl font-black';
+              pts.textContent = q.points;
+              cell.append(label, pts);
+            }
           } else {
             cell.className = 'opacity-0';
           }

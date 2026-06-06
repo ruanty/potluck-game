@@ -33,7 +33,7 @@ function makePlayer(name, team) {
   await sleep(400);
 
   // Audio question auto-opens buzzing.
-  host.emit('host:selectQuestion', { category: audioQ.category, points: audioQ.points });
+  host.emit('host:selectQuestion', { id: audioQ.id });
   await sleep(500);
 
   // Player A buzzes first.

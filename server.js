@@ -140,9 +140,9 @@ io.on('connection', (socket) => {
     io.emit('state:board', getBoardData());
   });
 
-  socket.on('host:selectQuestion', ({ category, points }) => {
-    if (state.answeredQuestions.has(`${category}::${points}`)) return;
-    const q = state.questions.find(q => q.category === category && q.points === points);
+  socket.on('host:selectQuestion', ({ id }) => {
+    if (state.answeredQuestions.has(id)) return;
+    const q = state.questions.find(q => q.id === id);
     if (!q) return;
     state.currentQuestion = q;
     state.phase = 'question';
@@ -156,6 +156,8 @@ io.on('connection', (socket) => {
     state.buzzLocked = false;
     io.emit('state:phase', 'question');
     io.emit('state:question', {
+      id: q.id,
+      label: q.label,
       category: q.category,
       points: q.points,
       text: q.text,
@@ -298,6 +300,8 @@ io.on('connection', (socket) => {
     }
     if (state.phase === 'question' && state.currentQuestion) {
       socket.emit('state:question', {
+        id: state.currentQuestion.id,
+        label: state.currentQuestion.label,
         category: state.currentQuestion.category,
         points: state.currentQuestion.points,
         text: state.currentQuestion.text,
@@ -401,7 +405,7 @@ function movePlayer(name, fromTeam, toTeam) {
 }
 
 function finishQuestion() {
-  state.answeredQuestions.add(`${state.currentQuestion.category}::${state.currentQuestion.points}`);
+  state.answeredQuestions.add(state.currentQuestion.id);
   state.phase = 'board';
   state.currentQuestion = null;
   state.currentBuzzTeam = null;
@@ -447,15 +451,18 @@ function getPlayersData() {
 }
 
 function getBoardData() {
+  // Preserve questions.json order within each category (labels a, b, c… follow
+  // that order), and keep category order by first appearance.
   const categories = [...new Set(state.questions.map(q => q.category))];
   return categories.map(cat => {
-    const qs = state.questions.filter(q => q.category === cat)
-      .sort((a, b) => a.points - b.points);
+    const qs = state.questions.filter(q => q.category === cat);
     return {
       category: cat,
       questions: qs.map(q => ({
+        id: q.id,
+        label: q.label,
         points: q.points,
-        answered: state.answeredQuestions.has(`${cat}::${q.points}`),
+        answered: state.answeredQuestions.has(q.id),
       })),
     };
   });
