@@ -94,8 +94,16 @@ io.on('connection', (socket) => {
   // Player joins
   socket.on('player:join', ({ name, team }) => {
     const cleanName = String(name || '').trim().slice(0, 40);
-    const cleanTeam = String(team || '').trim().slice(0, 40);
+    let cleanTeam = String(team || '').trim().slice(0, 40);
     if (!cleanName || !cleanTeam) return;
+
+    // Lock players to their team: once a name is on a team they cannot switch
+    // by rejoining with a different team. (Only the host may move players.)
+    // This also keeps a reconnecting player on their original team.
+    const existingTeam = findPlayerTeam(cleanName);
+    if (existingTeam && existingTeam !== cleanTeam) {
+      cleanTeam = existingTeam;
+    }
 
     state.players[socket.id] = { name: cleanName, team: cleanTeam };
     ensureTeam(cleanTeam);
@@ -105,6 +113,7 @@ io.on('connection', (socket) => {
     ensurePlayerScore(cleanTeam, cleanName);
     io.emit('state:teams', getTeamsData());
     io.emit('state:players', getPlayersData());
+    // Echo back the team they're actually on (may differ from requested).
     socket.emit('player:joined', { name: cleanName, team: cleanTeam });
   });
 
@@ -321,6 +330,14 @@ function ensureTeam(name) {
     state.teams[name] = { score: 0, members: [] };
   }
   return state.teams[name];
+}
+
+// Which team a player name currently belongs to, or null if not on any team.
+function findPlayerTeam(name) {
+  for (const [teamName, data] of Object.entries(state.teams)) {
+    if (data.members.includes(name)) return teamName;
+  }
+  return null;
 }
 
 function broadcastRoster() {

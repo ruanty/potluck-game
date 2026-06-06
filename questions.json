@@ -157,7 +157,7 @@
     "category": "电视节目 TV Shows",
     "points": 300,
     "text": "🎵 听音频，说出是什么节目 / Name this TV program",
-    "answer": "天气预报 片头 / Weather Forecast — opening",
+    "answer": "天气预报 片尾 / Weather Forecast — ending",
     "media": {
       "type": "audio",
       "url": "/media/tianqi-intro.m4a"
@@ -554,11 +554,11 @@
   {
     "category": "童年游戏和回忆 Childhood Games & Memories",
     "points": 600,
-    "text": "🎵 听音频：什么情况下会放这首歌？/ When is this song usually played?",
-    "answer": "学校 / 商场关门 / When a school or mall is closing",
+    "text": "🎵 听音频：什么情况下会放这首歌？/ When is this song (《回家》) usually played?",
+    "answer": "学校 / 商场关门 / 飞机到达 / When a school or mall is closing, or a plane lands",
     "media": {
       "type": "audio",
-      "url": "/media/tianqi-intro.m4a"
+      "url": "/media/child-huijia.m4a"
     },
     "answerMedia": null
   }

@@ -44,7 +44,7 @@ Q = [
     # TV (6)
     g(TV, 100, P_TV, "新闻联播 片头 / Xinwen Lianbo (CCTV News) — opening", "xinwen-intro"),
     g(TV, 200, P_TV, "新闻联播 片尾（重逢 Together Again）/ CCTV News — ending", "xinwen-outro"),
-    g(TV, 300, P_TV, "天气预报 片头 / Weather Forecast — opening", "tianqi-intro"),
+    g(TV, 300, P_TV, "天气预报 片尾 / Weather Forecast — ending", "tianqi-intro"),
     g(TV, 400, P_TV, "同一首歌 片尾 / Tong Yi Shou Ge (“Same Song”) — ending", "tv-tongyishouge-outro"),
     g(TV, 500, P_TV, "焦点访谈 片头 / Jiaodian Fangtan (Focus) — opening", "jiaodian-intro"),
     g(TV, 600, P_TV, "2005 超级女声 主题曲《想唱就唱》/ 2005 Super Girl theme “Sing If You Want”", "chaonv05"),
@@ -97,8 +97,9 @@ Q = [
     q(CHILD, 400, "看图，说出这个童年游戏/动作 / Look at the picture — name this childhood game/behavior", "阿鲁巴 / Aluba",
       media=img("child-aluba-q.jpg")),
     g(CHILD, 500, "🎵 听铃声，说出是什么 / Name this ringtone", "诺基亚铃声 / Nokia ringtone", "child-nokia"),
-    q(CHILD, 600, "🎵 听音频：什么情况下会放这首歌？/ When is this song usually played?",
-      "学校 / 商场关门 / When a school or mall is closing", media=aud("tianqi-intro")),
+    q(CHILD, 600, "🎵 听音频：什么情况下会放这首歌？/ When is this song (《回家》) usually played?",
+      "学校 / 商场关门 / 飞机到达 / When a school or mall is closing, or a plane lands",
+      media=aud("child-huijia")),
 ]
 
 # sanity: every referenced media file must exist
