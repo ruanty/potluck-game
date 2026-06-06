@@ -9,3 +9,4 @@ potluck-media.zip
 
 # Tunnel secrets (ngrok domain / token) — never commit
 tools/tunnel.env
+potluck-game-full.zip
